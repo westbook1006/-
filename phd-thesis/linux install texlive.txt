@@ -1,0 +1,134 @@
+参见
+http://linux.chinaunix.net/techdoc/desktop/2008/12/20/1053951.shtml
+buntu 6.06
+dapper对中文的支持应该说是一向不错的，包括现在默认安装就包含了scim输入法。然而，一般安装的ubuntu虽然能够显示、输入中文了，但总觉
+得所显示的中文像歪瓜裂枣，很是别扭。这是很无奈的，也不是linux的错，这是因为现在几乎没有免费的中文字体库来给我们用，大家平时使用习惯了的
+winxp里面的宋体、还有方正排版系统里面的仿宋体、公文中的方正小标宋等等，这些字体都是商业公司开发出来用在自己的产品中的，是有版权的，所以
+linux不能拿过来就用。如果你还没有听说过字体有版权的话，上网搜索一下“
+胡万进
+”
+吧，这位老兄就是当年在微软从事字体制作的一位员工，他所制作的字体的版权就是归微软公司所有。我们国家虽然对IT产业非常关注，但是更关注
+windows，对开源社区和自由软件的支持几乎没有，直到今天也没有投资开发出一套免费的字体供大家使用。不过幸好有怀着共产主义信念的好同志，为我们
+提供了免费的替代方案，现在我们可以使用
+圆体美化
+，还有开源的
+文泉驿
+（
+域名2
+）可以用。
+本文则是参考
+如何使用xp带的字体来进行中文美化？
+一文，实践中文字体的安装，并对ubuntu的字体体系更加深入的了解一下，这样以后再安装任何字体就都不怕了。
+一、准备字体文件
+我一直认为，如果我拥有了一套windows
+xp的使用权（通过oem方式），那么我就同时拥有了对这份windows产品的只用于我个人的任意使用权，这里面包括了对其中的字体的使用权。所以，本
+文中将winxp的字体拷贝到linux下使用的做法，应该是没有侵权的。
+windows的字体一般存放在c:\windows\fonts目录下，我拷贝到linux下的字体有：
+simfang.ttf 仿宋体
+simhei.ttf 黑体
+simkai.ttf 楷体
+simsun.ttf 宋体和新宋体，原文件名simsun.ttc
+tahoma.ttf tahoma字体
+tahomabd.ttf tahoma字体的粗体形式
+verdana.ttf verdana字体
+verdanab.ttf verdana字体的粗体形式
+verdanai.ttf verdana字体的斜体形式
+verdanaz.ttf verdana字体的粗体＋斜体形式 
+拷贝过来的字体文件放在了/home/fwolf/tools/fonts目录下。
+二、将字体加入到linux的可使用字体中
+首先把字体文件链接到存放字体的目录中
+cd /usr/share/fonts
+ln -s /home/fwolf/tools/fonts xpfonts
+cd xpfonts
+mkfontscale
+mkfontdir 
+这样作和把字体拷贝到/usr/share/fonts的一个目录下的效果是一样的。后面的两个mkfont命令是生成xpfonts目录下所包含的字体的索引信息。然后运行fc-cache命令更新字体缓存：
+fc-cache 
+现在，应该说linux就可以使用这些新装上的中文字体了，看一下openoffic里的截图吧：
+
+其中仿宋体的字体名是FangSong_GB2312，黑体是SimHei，楷体是KaiTi_GB2312，宋体是SimSun，字体名暂时都不是中文的。
+三、修改/etc/fonts/fonts.conf的字体渲染顺序
+让我们一边修改，一边分析fonts.conf这个文件的内容吧，注意部分注释（之间的内容）和无关紧要或者重复的内容我将跳过不再解释。
+  声明这个文件是一个xml文档
+xml文档的格式声明（dtd = document type define）
+xml文件需要的根节点 
+
+文档中提示不要手工修改fonts.conf，个人的设定可以写入local.conf文件，并且会自动被fonts.conf读入，不过我现在还不知道怎么创建这个文件，等知道了再公布出来吧，现在先拿fonts.conf开刀，反正预先已经作了备份。
+    /usr/share/fonts
+/usr/X11R6/lib/X11/fonts/Type1 /usr/local/share/fonts
+~/.fonts 
+所有字体文件存放的位置，其中第一个就是我们刚才放字体文件的目录/usr/share/fonts。
+
+mono
+monospace
+
+将本文件中的别名mono替换成全称monospace，这是xml的一个自动替换声明，使用别名的目的应该是为了简化书写或者维持对旧版本的兼容。后面还有几个替换就不再一一介绍了。
+     
+Bitstream Vera Serif
+Vera Sans YuanTi                        
+Times
+Times New Roman 
+Serif字型将要使用的字体顺序。当要显示Serif字型的内容时，就从下面这个列表中选择字体，匹配顺序是自上而下。可以看到已经安装的圆体美
+化再这里作了修改。如果我们想把宋体作为首选，就在Bitstream Vera Serif字体前面比葫芦画瓢加上一行就可以了。
+至于什么是Serif字型，以及Sans-serif字型，可以看一下
+细说字体 Sans Serif 与 Serif
+和
+serif vs sans serif
+这两篇文章，说明的很详细。我觉得把他们叫做字型或者字族，相对于字体来说，更贴切一些。
+下面的Sans-serif faces、Monospace faces段中处理方式相同。
+
+
+又是三个替换，大概意思是如果上面的字体匹配还不成功，就尝试使用sans-serif、serif、monospace的默认字体来替换，最后如果还替换不成功，强制使用sans-serif字体。（不知道这么理解是否正确）
+
+GulimChe
+false
+
+一些亚洲字体实际使用了等宽字体，但是却没有明确的声明，这段就是为了兼容这个进行的处理，保持不变即可。
+  
+修正Bitstream Vera字体在小于8点的时候的显示问题，保持不变即可。
+local.conf
+–> 
+加载配置文件local.conf，下面的~/.fonts.conf也是一样。
+
+serif
+Bitstream Vera Serif 
+又是三个系列字型的字体别名，不知道这个和前面的类似设置是怎么个关系，大概前面设置的是备选字体，这里是推荐字体？不过照例把我们的SimSun加进去。
+  
+对没有斜体字的字体的处理方法，保持不变即可。
+  
+没有黑体字的字体的处理方法，保持不变即可。
+  
+Unicode编码中在所有字体中都应该显示为空的编码表，保持不变即可。
+  
+每隔30秒钟就重新检查一下本设置文件（看设置改变了没有），保持不变即可。
+至此，标准的配置文件就结束了，我们需要作的主要修改也都完成了。重启X应该就能看到宋体中文的界面了。不过在fonts.conf还可以作一些其他的字体处理设置，这个在圆体美化所带的那个fonts.conf中有例子，比如：
+Vera Sans YuanTi
+false
+这就是指明在对Vera Sans YuanTi字体的处理中，globaladvance参数设置为false，其他的设置也多是这种语法，具体的含义和效果我就不知道了:)。
+四、中文字体显示优化
+按照上面的方法配置好以后，宋体能够显示了，但是字体有些发虚，那么一种简单的方法就是在
+系统->首选项->字体(system->preference->font)
+中选择单色(Monochrome)，但是这样所有的字体包括英文字体都会有一点点的小锯齿，那么替代的方法就是通过修改fonts.conf，去掉宋体
+的反锯齿，并且用黑体替代宋体的粗体。在fonts.conf中添加：
+
+SimSun
+bold
+SimHei
+SimSun
+false
+宋体
+SimSun
+新宋体
+SimSun
+仿宋_GB2312
+FangSong_GB2312
+楷体_GB2312
+KaiTi_GB2312
+黑体
+SimHei
+
+为什么要用黑体替代宋体的粗体呢，因为宋体字体其实是不含粗体的，windows下也是，只是windows采用了更高级一些的方法来间接实现了宋体的粗体而已。
+小结
+以上就是简单的中文字体设置方法，和我对fonts.conf的简单理解，希望能对大家有用，也希望过路大侠指正错误和不足之处。另外还可以参考一下
+一个详细的汉化美化方案(freetype/fontconfig/xft)
+，分析得比我深入多了。 
